@@ -1,0 +1,104 @@
+---
+title: "Midterm Review"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(ggplot2)
+library(ggridges)
+library(tibble)
+library(tidyr)
+library(readr)
+library(purrr)
+library(dplyr)
+library(ggthemes)
+```
+
+##understanding variables 
+```{r}
+airbnb_data = read_csv("./data/nyc_airbnb.zip") %>% 
+  mutate(rating = review_scores_location/2) %>% 
+  rename(boro = neighbourhood_group)
+str(airbnb_data)
+```
+##Brainstroming questions?
+```{r}
+##Does rating vary by neighborhood, room type, or both?
+airbnb_data %>% 
+  group_by(boro, room_type) %>% 
+  filter(!is.na(rating)) %>% ##or you can use na.rm = TRUE, drop_na
+  summarize(mean_rating = mean(rating),
+            median_rating = median(rating),
+            sd_rating = sd(rating))
+
+airbnb_data %>% 
+  group_by(boro, room_type) %>% 
+  filter(!is.na(rating)) %>% ##or you can use na.rm = TRUE, drop_na
+  summarize(mean_rating = mean(rating)) %>% 
+  spread(key = boro, value = mean_rating) ## spread is reverse of gather
+            
+airbnb_data %>% 
+  ggplot(aes(x = boro, y = rating)) + geom_boxplot()
+
+airbnb_data %>% 
+  ggplot(aes(x = room_type, y = rating)) +
+  geom_violin(bw = .1) ##define the width of the graph
+
+airbnb_data %>% 
+  count(boro)
+
+airbnb_data %>% 
+  count(room_type)
+```
+
+```{r}
+##Do hosts with more listings have higher or lower ratings?
+airbnb_data %>% 
+  count(calculated_host_listings_count) %>% 
+
+airbnb_data %>% 
+  ggplot(aes(x = calculated_host_listings_count, y = rating)) + 
+  geom_point() +
+  geom_smooth()
+
+airbnb_data %>% 
+  filter(!is.na(rating)) %>% 
+  mutate(lots_of_houses = (calculated_host_listings_count > 1)) %>% 
+  group_by(lots_of_houses) %>% 
+  summarize(mean_rating = mean(rating),
+            median_rating = median(rating),
+            sd_rating = sd(rating))
+  
+  
+group_by(calculated_host_listings_count) %>% 
+  filter(!is.na(rating)) %>% 
+  summarize(mean_rating = mean(rating)) %>% 
+  ggplot(aes(x = calculated_host_listings_count, y = mean_rating )) 
+```
+
+```{r}
+##Where are rentals located?
+airbnb_data %>% 
+  filter(boro == "Manhattan", price < 500) %>% 
+  ggplot(aes(x = longitude, y = latitude, color = price)) +
+  geom_point(alpha = .1) +
+  theme_map()
+```
+
+which rentals make the most money?
+How is price related to other variables?
+how are descriptions related to number of reviews?
+what's different about low-availablilty 
+
+```{r}
+gp1 <- c(9,12,14,11,13,12,14,11,13,11)
+gp2 <- c(10,6,9,9,19,9,8,11,7,8)
+summarize(gp1, mean = mean(gp1), sd = sd(gp1)) 
+
+summary(gp2)
+```
+
